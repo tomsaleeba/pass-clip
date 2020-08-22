@@ -1,4 +1,4 @@
-# pass clip 0.3 [![build status][build-img]][build-url]
+# pass clip 0.3
 
 A [Password Store (Pass)](https://www.passwordstore.org/) extension that lets you leverage the power of [FZF](https://github.com/junegunn/fzf) to fuzzy find stored passwords and snap them to the clipboard.
 
