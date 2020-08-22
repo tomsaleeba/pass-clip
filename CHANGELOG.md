@@ -1,3 +1,9 @@
+# 0.3
+
+* Version specific to ArcherN9 requirements
+* Deleted Rofi
+* Made script aligned with Linux theory: Do one thing and do it good
+
 # 0.2
 
 * Remove redundant colon #1 @EdwinHoksberg
