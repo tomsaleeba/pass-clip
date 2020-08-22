@@ -2,16 +2,22 @@
 
 A [Password Store (Pass)](https://www.passwordstore.org/) extension that lets you leverage the power of [FZF](https://github.com/junegunn/fzf) to fuzzy find stored passwords and snap them to the clipboard.
 
-## Usage
+## How to use 
 
-```\w
-    Usage:
-    $PROGRAM clip [options]
-        Provide an interactive solution to copy passwords to the
-        clipboard. It will show all pass-names in fzf, waits for the user 
-	to select one then copies it to the clipboard.
+```sh
+$ pass clip
+
+# The output should be something similar
+
+> Verge/TestAccount1
+> NYT/TestAccount2
+> PriceMongo/TestAccount3
+> Testing Website/silly account 4
+> Office/my official account
+> This demo isn\'t going well/ is it account
+6/6
+Search Query::  # Enter the query here to let FZF do what it does best. Magic.
 ```
-Please refer examples on the official Pass Clip Repository. The interface has been kept consistent.
 
 ## Installation
 
