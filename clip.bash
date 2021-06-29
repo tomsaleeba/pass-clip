@@ -23,7 +23,8 @@
 # - Removed Rofi
 # - The program no longer attempts to generate a password if it does not already exist
 # - The original program in its current shape and form was not OSX compliant.
-#   This version is.
+# - Replaced Find with fd
+
 
 PASSWORD_STORE_DIR="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
 USERNAME=$(whoami)
@@ -60,11 +61,12 @@ cmd_clip() {
 
     # Figure out if we use fzf
     local prompt='Search Query :: '
-    local fzf_cmd="fzf --print-query --prompt=\"$prompt\""
+    local fzf_cmd="fzf --print-query --prompt=\"$prompt\" -i --no-mouse"
 
     if [ -n "$term" ]; then
       fzf_cmd="$fzf_cmd -q\"$term\""
     fi
+    
     fzf_cmd="$fzf_cmd | tail -n1"
 
     if [[ $fzf = 1 ]]; then
@@ -75,12 +77,14 @@ cmd_clip() {
     cd "$PASSWORD_STORE_DIR" || die "Could not locate password store directory. Please ensure \$PASSWORD_STORE_DIR is setup."
 
     # Select a passfile
-    passfile=$(find -L "$PASSWORD_STORE_DIR" -path '*/.git' -prune -o -iname '*.gpg' -print \
-        | sed -e 's/.gpg$//' \
-	| sed -e 's/\/Users\/'$USERNAME'\/.password-store\///' \
-        | sort \
+    passfile=$(
+        cd $PASSWORD_STORE_DIR  \
+        && fd --type f          \
+        | sed -e 's/.gpg$//'    \
+        | sort                  \
         | eval "$menu" )
 
+    # If no pass file was selected by the user, exit the program with an error
     if [ -z "$passfile" ]; then
         die 'No passfile selected.'
     fi
