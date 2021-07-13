@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-######################## Original License ######################## 
+######################## Original License ########################
 # pass clip - Password Store Extension (https://www.passwordstore.org/)
 # Copyright (C) 2019 Pierre PENNINCKX <ibizapeanut@gmail.com>.
 #
@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-######################## Original License ######################## 
+######################## Original License ########################
 
 # Modifications carried out by ArcherN9
 # - Removed Rofi
@@ -27,14 +27,13 @@
 
 
 PASSWORD_STORE_DIR="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
-USERNAME=$(whoami)
 
 cmd_clip_usage() {
     cat <<-_EOF
     Usage:
     $PROGRAM clip [options]
         Provide an interactive solution to copy passwords to the
-        clipboard. It will show all pass-names in fzf, waits for the user 
+        clipboard. It will show all pass-names in fzf, waits for the user
 	to select one then copies it to the clipboard.
 
 _EOF
@@ -50,7 +49,7 @@ command_exists() {
 }
 
 cmd_clip() {
-    local opts fzf=0 
+    local opts fzf=0
     local err=$?
     # Parse arguments
     if command_exists fzf; then
@@ -66,7 +65,7 @@ cmd_clip() {
     if [ -n "$term" ]; then
       fzf_cmd="$fzf_cmd -q\"$term\""
     fi
-    
+
     fzf_cmd="$fzf_cmd | tail -n1"
 
     if [[ $fzf = 1 ]]; then
@@ -88,16 +87,37 @@ cmd_clip() {
     if [ -z "$passfile" ]; then
         die 'No passfile selected.'
     fi
-    
-    # Either copy existing one or generate a new one
-    if ls "$passfile.gpg" > /dev/null 2>&1; then
-        cmd_show "$passfile" --clip || exit 1
+
+    if ! ls "$passfile.gpg" > /dev/null 2>&1; then
+      die "Passfile $passfile not found"
+    fi
+
+    # clean up any zombie gpg prompt processes
+    pkill -f 'gpg.*password-store' || true
+
+    re='\([A-Za-z0-9_.-]*\): \(.*\)'
+    passKey='pass'
+
+    availableKeys=$(cmd_show "$passfile" | tail +3 | sed "s/$re/\1/")
+    # select a key to copy
+    keySel=$(echo -e "$passKey\n$availableKeys" | fzf)
+
+    if [ -z "$keySel" ]; then
+      die 'No key selected.'
+    fi
+
+    if [ $keySel = $passKey ]; then
+      cmd_show --clip "$passfile"
+    else
+      val=$(cmd_show "$passfile" | grep "$keySel: " | head -n 1 | sed "s/$re/\2/")
+      if [ -z "$val" ]; then
+        die 'No val produced.'
+      fi
+      echo "[INFO] copied $keySel to clipboard"
+      echo -n "$val"| pbcopy
     fi
 }
 
 [[ "$1" == "help" || "$1" == "--help" || "$1" == "-h" ]] && cmd_clip_usage
 
 cmd_clip "$@"
-
-
-
